@@ -10,6 +10,16 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
   end
 
+  test "dashboard with projection enabled" do
+    get root_path, params: { projection: "true" }
+    assert_response :ok
+  end
+
+  test "dashboard with projection preserves period param" do
+    get root_path, params: { projection: "true", period: "last_365_days" }
+    assert_response :ok
+  end
+
   test "changelog" do
     VCR.use_cassette("git_repository_provider/fetch_latest_release_notes") do
       get changelog_path

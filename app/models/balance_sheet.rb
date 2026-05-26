@@ -42,7 +42,7 @@ class BalanceSheet
   end
 
   def net_worth_projection_series
-    net_worth_projection_builder.net_worth_projection_series(current_net_worth: net_worth)
+    net_worth_projection_builder.net_worth_projection_series(current_net_worth: net_worth_money || Money.new(0, currency))
   end
 
   def currency
