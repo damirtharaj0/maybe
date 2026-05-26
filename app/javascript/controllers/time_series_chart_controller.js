@@ -114,6 +114,27 @@ export default class extends Controller {
       this._drawTooltip();
       this._trackMouseForShowingTooltip();
     }
+
+    // Apply trendline split at projected_start_date on initial render
+    const projectedStartDate = this.dataValue.projected_start_date;
+    if (projectedStartDate) {
+      const parsedDate = parseLocalDate(projectedStartDate);
+      const [domainMin, domainMax] = this._d3XScale.domain();
+      const totalMs = domainMax - domainMin;
+      const offsetMs = parsedDate - domainMin;
+      const percent = Math.min(1, Math.max(0, offsetMs / totalMs));
+      this._setTrendlineSplitAt(percent);
+    }
+  }
+
+  get _projectedSplitPercent() {
+    const projectedStartDate = this.dataValue.projected_start_date;
+    if (!projectedStartDate) return 1;
+    const parsedDate = parseLocalDate(projectedStartDate);
+    const [domainMin, domainMax] = this._d3XScale.domain();
+    const totalMs = domainMax - domainMin;
+    const offsetMs = parsedDate - domainMin;
+    return Math.min(1, Math.max(0, offsetMs / totalMs));
   }
 
   _drawTrendline() {
@@ -367,7 +388,7 @@ export default class extends Controller {
           this._d3Group.selectAll(".guideline").remove();
           this._d3Group.selectAll(".data-point-circle").remove();
           this._d3Tooltip.style("opacity", 0);
-          this._setTrendlineSplitAt(1);
+          this._setTrendlineSplitAt(this._projectedSplitPercent);
         }
       });
   }
