@@ -114,27 +114,23 @@ export default class extends Controller {
       this._drawTooltip();
       this._trackMouseForShowingTooltip();
     }
-
-    // Apply trendline split at projected_start_date on initial render
-    const projectedStartDate = this.dataValue.projected_start_date;
-    if (projectedStartDate) {
-      const parsedDate = parseLocalDate(projectedStartDate);
-      const [domainMin, domainMax] = this._d3XScale.domain();
-      const totalMs = domainMax - domainMin;
-      const offsetMs = parsedDate - domainMin;
-      const percent = Math.min(1, Math.max(0, offsetMs / totalMs));
-      this._setTrendlineSplitAt(percent);
-    }
   }
 
-  get _projectedSplitPercent() {
-    const projectedStartDate = this.dataValue.projected_start_date;
-    if (!projectedStartDate) return 1;
-    const parsedDate = parseLocalDate(projectedStartDate);
-    const [domainMin, domainMax] = this._d3XScale.domain();
-    const totalMs = domainMax - domainMin;
-    const offsetMs = parsedDate - domainMin;
-    return Math.min(1, Math.max(0, offsetMs / totalMs));
+  get _projectedSplitDate() {
+    const raw = this.dataValue.projected_start_date;
+    return raw ? parseLocalDate(raw) : null;
+  }
+
+  get _historicalDataPoints() {
+    const split = this._projectedSplitDate;
+    if (!split) return this._normalDataPoints;
+    return this._normalDataPoints.filter((d) => d.date <= split);
+  }
+
+  get _projectedDataPoints() {
+    const split = this._projectedSplitDate;
+    if (!split) return [];
+    return this._normalDataPoints.filter((d) => d.date >= split);
   }
 
   _drawTrendline() {
@@ -142,13 +138,26 @@ export default class extends Controller {
 
     this._d3Group
       .append("path")
-      .datum(this._normalDataPoints)
+      .datum(this._historicalDataPoints)
       .attr("fill", "none")
       .attr("stroke", `url(#${this.element.id}-split-gradient)`)
       .attr("d", this._d3Line)
       .attr("stroke-linejoin", "round")
       .attr("stroke-linecap", "round")
       .attr("stroke-width", this.strokeWidthValue);
+
+    if (this._projectedDataPoints.length > 1) {
+      this._d3Group
+        .append("path")
+        .datum(this._projectedDataPoints)
+        .attr("fill", "none")
+        .attr("stroke", "var(--color-gray-400)")
+        .attr("stroke-dasharray", "6, 4")
+        .attr("d", this._d3Line)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", this.strokeWidthValue);
+    }
   }
 
   _installTrendlineSplit() {
@@ -267,12 +276,12 @@ export default class extends Controller {
       .attr("stop-color", this._trendColor)
       .attr("stop-opacity", 0);
 
-    // Clip path makes gradient start at the trendline
+    // Clip path makes gradient start at the trendline (historical only)
     this._d3Group
       .append("clipPath")
       .attr("id", `${this.element.id}-clip-below-trendline`)
       .append("path")
-      .datum(this._normalDataPoints)
+      .datum(this._historicalDataPoints)
       .attr(
         "d",
         d3
@@ -388,7 +397,7 @@ export default class extends Controller {
           this._d3Group.selectAll(".guideline").remove();
           this._d3Group.selectAll(".data-point-circle").remove();
           this._d3Tooltip.style("opacity", 0);
-          this._setTrendlineSplitAt(this._projectedSplitPercent);
+          this._setTrendlineSplitAt(1);
         }
       });
   }
