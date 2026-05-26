@@ -10,7 +10,7 @@ class PagesController < ApplicationController
     @projection = params[:projection] == "true"
     @net_worth_series = if @projection
       historical = @balance_sheet.net_worth_series(period: @period)
-      projected = @balance_sheet.net_worth_projection_series
+      projected = @balance_sheet.net_worth_projection_series(period: @period)
 
       combined_values = historical.values + projected.values.drop(1)
 

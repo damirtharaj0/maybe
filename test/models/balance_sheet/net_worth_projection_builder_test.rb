@@ -13,21 +13,41 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     )
   end
 
-  test "returns a Series with exactly 12 values" do
+  test "returns 12 monthly values for a 365-day period" do
     create_income_and_expense_transactions
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 10_000)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_365_days)
 
     assert_instance_of Series, series
     assert_equal 12, series.values.length
+  end
+
+  test "returns daily values for a 30-day period" do
+    create_income_and_expense_transactions
+
+    builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_30_days)
+
+    assert_equal 30, series.values.length
+    assert_equal Date.current + 1, series.values[1].date
+  end
+
+  test "returns weekly values for a 90-day period" do
+    create_income_and_expense_transactions
+
+    builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_90_days)
+
+    assert_equal 13, series.values.length
+    assert_equal Date.current + 7, series.values[1].date
   end
 
   test "first projected value equals current net worth" do
     create_income_and_expense_transactions
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 10_000)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_365_days)
 
     assert_equal 10_000, series.values.first.value
   end
@@ -42,7 +62,7 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     create_transaction(account: @account, amount: 1_000, date: 1.month.ago.to_date)   # expense
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 10_000)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_365_days)
 
     # With income of 3000/month and expense of 1000/month, delta = 2000
     expected_delta = 3_000.0 - 1_000.0
@@ -61,7 +81,7 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     create_transaction(account: @account, amount: -500, date: 1.month.ago.to_date)    # income
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 10_000)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_365_days)
 
     series.values.each_cons(2) do |prev, curr|
       assert curr.value < prev.value, "Expected #{curr.value} to be less than #{prev.value}"
@@ -72,7 +92,7 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     create_income_and_expense_transactions
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 10_000)
+    series = builder.net_worth_projection_series(current_net_worth: 10_000, period: Period.last_365_days)
 
     assert_equal Date.current, series.projected_start_date
   end
@@ -83,7 +103,7 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     create_transaction(account: @account, amount: 500, date: 1.month.ago.to_date)
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 5_000)
+    series = builder.net_worth_projection_series(current_net_worth: 5_000, period: Period.last_365_days)
 
     assert series.months_of_data <= 12
     assert series.months_of_data >= 1
@@ -93,7 +113,7 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
     create_transaction(account: @account, amount: -1_000, date: 1.month.ago.to_date)
 
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 5_000)
+    series = builder.net_worth_projection_series(current_net_worth: 5_000, period: Period.last_365_days)
 
     assert_instance_of Series, series
     assert_equal 12, series.values.length
@@ -101,14 +121,14 @@ class BalanceSheet::NetWorthProjectionBuilderTest < ActiveSupport::TestCase
 
   test "months_of_data is 0 when family has no transaction history" do
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 0)
+    series = builder.net_worth_projection_series(current_net_worth: 0, period: Period.last_365_days)
 
     assert_equal 0, series.months_of_data
   end
 
   test "returns flat series when no transaction history exists" do
     builder = BalanceSheet::NetWorthProjectionBuilder.new(@family)
-    series = builder.net_worth_projection_series(current_net_worth: 5_000)
+    series = builder.net_worth_projection_series(current_net_worth: 5_000, period: Period.last_365_days)
 
     assert_equal 12, series.values.length
     series.values.each do |v|

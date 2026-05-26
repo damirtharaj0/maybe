@@ -1,18 +1,24 @@
 class BalanceSheet::NetWorthProjectionBuilder
-  PROJECTION_MONTHS = 12
+  LOOKBACK_MONTHS = 12
+
+  DAILY   = :daily
+  WEEKLY  = :weekly
+  MONTHLY = :monthly
 
   def initialize(family)
     @family = family
   end
 
-  def net_worth_projection_series(current_net_worth:)
-    monthly_delta = median_income - avg_expense
+  def net_worth_projection_series(current_net_worth:, period: Period.last_365_days)
+    duration_days = (period.end_date - period.start_date).to_i
+    granularity, step_count = projection_granularity(duration_days)
+    delta = scaled_delta(granularity)
 
     today = Date.current
-    values = PROJECTION_MONTHS.times.map do |i|
-      date = today >> i
-      projected_value = current_net_worth + (monthly_delta * i)
-      prev_value = current_net_worth + (monthly_delta * (i - 1))
+    values = step_count.times.map do |i|
+      date = step_date(today, granularity, i)
+      projected_value = current_net_worth + (delta * i)
+      prev_value = current_net_worth + (delta * (i - 1))
 
       Series::Value.new(
         date: date,
@@ -27,8 +33,8 @@ class BalanceSheet::NetWorthProjectionBuilder
 
     Series.new(
       start_date: today,
-      end_date: today >> (PROJECTION_MONTHS - 1),
-      interval: "1 month",
+      end_date: step_date(today, granularity, step_count - 1),
+      interval: interval_label(granularity),
       values: values,
       favorable_direction: "up",
       projected_start_date: today,
@@ -39,10 +45,45 @@ class BalanceSheet::NetWorthProjectionBuilder
   private
     attr_reader :family
 
+    def projection_granularity(duration_days)
+      if duration_days <= 30
+        [ DAILY, duration_days ]
+      elsif duration_days <= 180
+        [ WEEKLY, (duration_days / 7.0).ceil ]
+      else
+        [ MONTHLY, (duration_days / 30.44).ceil ]
+      end
+    end
+
+    def scaled_delta(granularity)
+      monthly = median_income - avg_expense
+      case granularity
+      when DAILY  then monthly / 30.44
+      when WEEKLY then monthly / 4.348
+      else             monthly
+      end
+    end
+
+    def step_date(today, granularity, i)
+      case granularity
+      when DAILY  then today + i
+      when WEEKLY then today + (i * 7)
+      else             today >> i
+      end
+    end
+
+    def interval_label(granularity)
+      case granularity
+      when DAILY  then "1 day"
+      when WEEKLY then "1 week"
+      else             "1 month"
+      end
+    end
+
     def scoped_transactions
       @scoped_transactions ||= family.transactions
         .visible
-        .in_period(Period.custom(start_date: 12.months.ago.to_date, end_date: Date.current))
+        .in_period(Period.custom(start_date: LOOKBACK_MONTHS.months.ago.to_date, end_date: Date.current))
     end
 
     def stats
