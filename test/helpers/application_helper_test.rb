@@ -1,6 +1,21 @@
 require "test_helper"
 
 class ApplicationHelperTest < ActionView::TestCase
+  test "#resolved_theme returns 'dark' when resolved_theme cookie is 'dark'" do
+    cookies[:resolved_theme] = "dark"
+    assert_equal "dark", resolved_theme
+  end
+
+  test "#resolved_theme returns 'light' when resolved_theme cookie is 'light'" do
+    cookies[:resolved_theme] = "light"
+    assert_equal "light", resolved_theme
+  end
+
+  test "#resolved_theme returns 'light' when resolved_theme cookie is absent" do
+    cookies.delete(:resolved_theme)
+    assert_equal "light", resolved_theme
+  end
+
   test "#title(page_title)" do
     title("Test Title")
     assert_equal "Test Title", content_for(:title)

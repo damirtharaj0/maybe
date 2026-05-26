@@ -75,6 +75,10 @@ module ApplicationHelper
               .join(separator)
   end
 
+  def resolved_theme
+    cookies[:resolved_theme].presence || "light"
+  end
+
   def show_super_admin_bar?
     if params[:admin].present?
       cookies.permanent[:admin] = params[:admin]
