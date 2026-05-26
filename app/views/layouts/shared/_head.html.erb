@@ -4,6 +4,23 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
+  <script>
+    (function() {
+      var pref = "<%= Current.user&.theme || "system" %>";
+      var resolved;
+      if (pref === "dark") {
+        resolved = "dark";
+      } else if (pref === "light") {
+        resolved = "light";
+      } else {
+        resolved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+      }
+      document.documentElement.dataset.theme = resolved;
+      var cookieValue = "resolved_theme=" + resolved + "; max-age=31536000; path=/; samesite=strict<%= Rails.env.production? ? "; secure" : "" %>";
+      document.cookie = cookieValue;
+    })();
+  </script>
+
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
 
   <%= javascript_include_tag "https://cdn.plaid.com/link/v2/stable/link-initialize.js" %>
