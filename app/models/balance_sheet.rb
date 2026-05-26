@@ -41,6 +41,10 @@ class BalanceSheet
     net_worth_series_builder.net_worth_series(period: period)
   end
 
+  def net_worth_projection_series(period: Period.last_365_days)
+    net_worth_projection_builder.net_worth_projection_series(current_net_worth: net_worth_money || Money.new(0, currency), period: period)
+  end
+
   def currency
     family.currency
   end
@@ -60,5 +64,9 @@ class BalanceSheet
 
     def net_worth_series_builder
       @net_worth_series_builder ||= NetWorthSeriesBuilder.new(family)
+    end
+
+    def net_worth_projection_builder
+      @net_worth_projection_builder ||= NetWorthProjectionBuilder.new(family)
     end
 end

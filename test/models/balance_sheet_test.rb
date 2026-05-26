@@ -1,6 +1,8 @@
 require "test_helper"
 
 class BalanceSheetTest < ActiveSupport::TestCase
+  include EntriesTestHelper
+
   setup do
     @family = families(:empty)
   end
@@ -73,6 +75,13 @@ class BalanceSheetTest < ActiveSupport::TestCase
     assert_equal 2, liability_groups.size
     assert_equal 1000 + 2000, liability_groups.find { |ag| ag.name == "Credit Cards" }.total
     assert_equal 3000 + 5000, liability_groups.find { |ag| ag.name == "Other Liabilities" }.total
+  end
+
+  test "net_worth_projection_series delegates to builder and returns a Series" do
+    series = BalanceSheet.new(@family).net_worth_projection_series
+    assert_instance_of Series, series
+    assert_equal 12, series.values.length
+    assert_equal Date.current, series.projected_start_date
   end
 
   private

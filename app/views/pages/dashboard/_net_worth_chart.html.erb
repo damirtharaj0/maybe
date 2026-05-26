@@ -1,12 +1,16 @@
-<%# locals: (balance_sheet:, period:, **args) %>
+<%# locals: (balance_sheet:, period:, projection: false, series: nil, **args) %>
 
-<div id="net-worth-chart">
-  <% series = balance_sheet.net_worth_series(period: period) %>
+<% series ||= balance_sheet.net_worth_series(period: period) %>
+
+<%= turbo_frame_tag "net-worth-chart" do %>
   <div class="flex justify-between gap-4 px-4">
     <div class="space-y-2">
       <div class="space-y-2">
         <div class="flex items-center gap-2">
           <p class="text-sm text-secondary font-medium"><%= t(".title") %></p>
+          <% if projection && series.months_of_data.present? && series.months_of_data < 12 %>
+            <span class="text-xs text-secondary bg-container-inset rounded px-1.5 py-0.5 border border-primary">Based on <%= series.months_of_data %> months of data</span>
+          <% end %>
         </div>
 
         <p class="text-primary -space-x-0.5 text-3xl font-medium <%= "animate-pulse" if balance_sheet.syncing? %>">
@@ -21,13 +25,24 @@
       </div>
     </div>
 
-    <%= form_with url: root_path, method: :get, data: { controller: "auto-submit-form" } do |form| %>
-      <%= form.select :period,
-                    Period.as_options,
-                    { selected: period.key },
-                    data: { "auto-submit-form-target": "auto" },
-                    class: "bg-container border border-secondary font-medium rounded-lg px-3 py-2 text-sm pr-7 cursor-pointer text-primary focus:outline-hidden focus:ring-0" %>
-    <% end %>
+    <div class="flex items-start gap-2">
+      <% toggle_params = projection ? { period: period.key } : { period: period.key, projection: "true" } %>
+      <%= link_to root_path(toggle_params),
+            data: { turbo_frame: "net-worth-chart" },
+            class: "flex items-center gap-1.5 border border-primary rounded-lg px-3 py-2 text-sm font-medium text-primary bg-container hover:bg-container-inset transition-colors #{"bg-container-inset" if projection}" do %>
+        <%= icon "trending-up", size: "sm" %>
+        <%= projection ? "Hide projection" : "Project" %>
+      <% end %>
+
+      <%= form_with url: root_path, method: :get, data: { controller: "auto-submit-form", turbo_frame: "net-worth-chart" } do |form| %>
+        <%= form.hidden_field :projection, value: "true" if projection %>
+        <%= form.select :period,
+                      Period.as_options,
+                      { selected: period.key },
+                      data: { "auto-submit-form-target": "auto" },
+                      class: "bg-container border border-secondary font-medium rounded-lg px-3 py-2 text-sm pr-7 cursor-pointer text-primary focus:outline-hidden focus:ring-0" %>
+      <% end %>
+    </div>
   </div>
 
   <% if series.any? %>
@@ -41,5 +56,4 @@
       <p class="text-secondary text-sm"><%= t(".data_not_available") %></p>
     </div>
   <% end %>
-
-</div>
+<% end %>

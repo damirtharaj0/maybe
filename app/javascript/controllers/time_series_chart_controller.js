@@ -116,18 +116,48 @@ export default class extends Controller {
     }
   }
 
+  get _projectedSplitDate() {
+    const raw = this.dataValue.projected_start_date;
+    return raw ? parseLocalDate(raw) : null;
+  }
+
+  get _historicalDataPoints() {
+    const split = this._projectedSplitDate;
+    if (!split) return this._normalDataPoints;
+    return this._normalDataPoints.filter((d) => d.date <= split);
+  }
+
+  get _projectedDataPoints() {
+    const split = this._projectedSplitDate;
+    if (!split) return [];
+    return this._normalDataPoints.filter((d) => d.date >= split);
+  }
+
   _drawTrendline() {
     this._installTrendlineSplit();
 
     this._d3Group
       .append("path")
-      .datum(this._normalDataPoints)
+      .datum(this._historicalDataPoints)
       .attr("fill", "none")
       .attr("stroke", `url(#${this.element.id}-split-gradient)`)
       .attr("d", this._d3Line)
       .attr("stroke-linejoin", "round")
       .attr("stroke-linecap", "round")
       .attr("stroke-width", this.strokeWidthValue);
+
+    if (this._projectedDataPoints.length > 1) {
+      this._d3Group
+        .append("path")
+        .datum(this._projectedDataPoints)
+        .attr("fill", "none")
+        .attr("stroke", "var(--color-gray-400)")
+        .attr("stroke-dasharray", "6, 4")
+        .attr("d", this._d3Line)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", this.strokeWidthValue);
+    }
   }
 
   _installTrendlineSplit() {
@@ -246,12 +276,12 @@ export default class extends Controller {
       .attr("stop-color", this._trendColor)
       .attr("stop-opacity", 0);
 
-    // Clip path makes gradient start at the trendline
+    // Clip path makes gradient start at the trendline (historical only)
     this._d3Group
       .append("clipPath")
       .attr("id", `${this.element.id}-clip-below-trendline`)
       .append("path")
-      .datum(this._normalDataPoints)
+      .datum(this._historicalDataPoints)
       .attr(
         "d",
         d3

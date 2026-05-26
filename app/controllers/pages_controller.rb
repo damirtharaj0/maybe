@@ -7,6 +7,26 @@ class PagesController < ApplicationController
     @balance_sheet = Current.family.balance_sheet
     @accounts = Current.family.accounts.visible.with_attached_logo
 
+    @projection = params[:projection] == "true"
+    @net_worth_series = if @projection
+      historical = @balance_sheet.net_worth_series(period: @period)
+      projected = @balance_sheet.net_worth_projection_series(period: @period)
+
+      combined_values = historical.values + projected.values.drop(1)
+
+      Series.new(
+        start_date: historical.start_date,
+        end_date: projected.end_date,
+        interval: historical.interval,
+        values: combined_values,
+        favorable_direction: "up",
+        projected_start_date: Date.today,
+        months_of_data: projected.months_of_data
+      )
+    else
+      @balance_sheet.net_worth_series(period: @period)
+    end
+
     period_param = params[:cashflow_period]
     @cashflow_period = if period_param.present?
       begin
