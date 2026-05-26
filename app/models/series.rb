@@ -10,7 +10,7 @@ class Series
     values.each(&block)
   end
 
-  attr_reader :start_date, :end_date, :interval, :trend, :values, :favorable_direction
+  attr_reader :start_date, :end_date, :interval, :trend, :values, :favorable_direction, :projected_start_date, :months_of_data
 
   Value = Struct.new(
     :date,
@@ -48,12 +48,14 @@ class Series
     end
   end
 
-  def initialize(start_date:, end_date:, interval:, values:, favorable_direction: "up")
+  def initialize(start_date:, end_date:, interval:, values:, favorable_direction: "up", projected_start_date: nil, months_of_data: nil)
     @start_date = start_date
     @end_date = end_date
     @interval = interval
     @values = values
     @favorable_direction = favorable_direction
+    @projected_start_date = projected_start_date
+    @months_of_data = months_of_data
   end
 
   def trend
@@ -65,12 +67,14 @@ class Series
   end
 
   def as_json
-    {
+    json = {
       start_date: start_date,
       end_date: end_date,
       interval: interval,
       trend: trend,
       values: values.map { |v| { date: v.date, date_formatted: v.date_formatted, value: v.value, trend: v.trend } }
     }
+    json[:projected_start_date] = projected_start_date if projected_start_date.present?
+    json
   end
 end
