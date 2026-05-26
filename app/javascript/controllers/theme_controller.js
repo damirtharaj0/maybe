@@ -4,15 +4,21 @@ export default class extends Controller {
   static values = { userPreference: String };
 
   connect() {
+    // Inline <script> in <head> already owns initial theme application before first paint.
+    // We only need to start listening for OS-level theme changes here.
     this.startSystemThemeListener();
+    this.connected = true;
   }
 
   disconnect() {
     this.stopSystemThemeListener();
+    this.connected = false;
   }
 
-  // Called automatically by Stimulus when the userPreferenceValue changes (e.g., after form submit/page reload)
+  // Called automatically by Stimulus when the userPreferenceValue changes (e.g., after form submit/page reload).
+  // Skip the initial callback fired on connect — the inline script already set the correct theme.
   userPreferenceValueChanged() {
+    if (!this.connected) return;
     this.applyTheme();
   }
 
