@@ -1,0 +1,27 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.twelvedata.com/time_series?apikey=test_key&end_date=2024-08-01&interval=1day&mic_code=XNAS&order=ASC&outputsize=5000&start_date=2024-08-01&symbol=AAPL
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.12.2
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"meta":{"symbol":"AAPL","interval":"1day","currency":"USD","exchange_timezone":"America/New_York","exchange":"NASDAQ","mic_code":"XNGS","type":"Common Stock"},"values":[{"datetime":"2024-08-01","open":"218.20000","high":"220.03000","low":"216.54001","close":"218.24001","volume":"42390900"}],"status":"ok"}'
+  recorded_at: Mon, 26 May 2025 00:00:00 GMT
+recorded_with: VCR 6.3.1

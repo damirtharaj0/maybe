@@ -1,0 +1,28 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&period1=1722495600&period2=1722495600
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/120.0.0.0 Safari/537.36
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"chart":{"result":[{"meta":{"currency":"USD","symbol":"AAPL","exchangeName":"NMS","fullExchangeName":"NasdaqGS","instrumentType":"EQUITY","regularMarketPrice":218.36,"dataGranularity":"1d","range":""},"timestamp":[1722495600],"indicators":{"quote":[{"open":[224.37],"high":[224.48],"low":[217.02],"close":[218.36],"volume":[62501000]}],"adjclose":[{"adjclose":[218.36]}]}}],"error":null}}'
+  recorded_at: Mon, 26 May 2025 00:00:00 GMT
+recorded_with: VCR 6.3.1

@@ -1,0 +1,50 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://query1.finance.yahoo.com/v10/finance/quoteSummary/AAPL?modules=assetProfile,quoteType,summaryProfile
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/120.0.0.0 Safari/537.36
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"quoteSummary":{"result":[{"assetProfile":{"address1":"One Apple Park
+        Way","city":"Cupertino","state":"CA","zip":"95014","country":"United States","phone":"408
+        996 1010","website":"https://www.apple.com","industry":"Consumer Electronics","industryKey":"consumer-electronics","industryDisp":"Consumer
+        Electronics","sector":"Technology","sectorKey":"technology","sectorDisp":"Technology","longBusinessSummary":"Apple
+        Inc. designs, manufactures, and markets smartphones, personal computers, tablets,
+        wearables, and accessories worldwide. The company offers iPhone, a line of
+        smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose
+        tablets; and wearables, home, and accessories comprising AirPods, Apple TV,
+        Apple Watch, Beats products, and HomePod. It also provides AppleCare support
+        and cloud services; and operates various platforms, including the App Store
+        that allow customers to discover and download applications and digital content,
+        such as books, music, video, games, and podcasts. In addition, the company
+        offers various subscription-based services, such as Apple Arcade, a game subscription
+        service; Apple Fitness+, a personalized fitness service; Apple Music, which
+        offers users a curated listening experience with on-demand radio stations;
+        Apple News+, a subscription news and magazine service; Apple TV+, which offers
+        exclusive original content; Apple Card, a co-branded credit card; and Apple
+        Pay, a cashless payment service, as well as licenses its intellectual property.
+        The company serves consumers, and small and mid-sized businesses; and the
+        education, enterprise, and government markets. It distributes third-party applications
+        for its products through the App Store. The company was formerly known as
+        Apple Computer Company and changed its name to Apple Inc. in January 2007.
+        Apple Inc. was founded in 1976 and is headquartered in Cupertino, California.","fullTimeEmployees":161000,"companyOfficers":[],"auditRisk":7,"boardRisk":1,"compensationRisk":3,"shareHolderRightsRisk":1,"overallRisk":2,"governanceEpochDate":1746057600,"compensationAsOfEpochDate":1703980800,"irWebsite":"http://investor.apple.com/","maxAge":86400},"quoteType":{"exchange":"NMS","quoteType":"EQUITY","symbol":"AAPL","underlyingSymbol":"AAPL","shortName":"Apple Inc.","longName":"Apple Inc.","firstTradeDateEpochUtc":345479400,"timeZoneFullName":"America/New_York","timeZoneShortName":"EDT","uuid":"8b10e4ae-9eeb-4da4-9b5a-b7f178743db2","messageBoardId":"finmb_24937","gmtOffSetMilliseconds":-14400000,"maxAge":1}}],"error":null}}'
+  recorded_at: Mon, 26 May 2025 00:00:00 GMT
+recorded_with: VCR 6.3.1

@@ -67,6 +67,16 @@ class Provider::Registry
 
         Provider::Openai.new(access_token)
       end
+
+      def yahoo_finance
+        Provider::YahooFinance.new
+      end
+
+      def twelve_data
+        api_key = ENV.fetch("TWELVE_DATA_API_KEY", Setting.twelve_data_api_key)
+        return nil unless api_key.present?
+        Provider::TwelveData.new(api_key)
+      end
   end
 
   def initialize(concept)
@@ -94,7 +104,13 @@ class Provider::Registry
       when :exchange_rates
         %i[synth]
       when :securities
-        %i[synth]
+        if ENV.fetch("SYNTH_API_KEY", Setting.synth_api_key).present?
+          %i[synth]
+        elsif ENV.fetch("TWELVE_DATA_API_KEY", Setting.twelve_data_api_key).present?
+          %i[twelve_data]
+        else
+          []
+        end
       when :llm
         %i[openai]
       else
