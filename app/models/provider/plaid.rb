@@ -56,7 +56,7 @@ class Provider::Plaid
     if access_token.present?
       request_params[:access_token] = access_token
     else
-      request_params[:products] = [ get_primary_product(accountable_type) ]
+      request_params[:products] = get_products(accountable_type)
       request_params[:additional_consented_products] = get_additional_consented_products(accountable_type)
     end
 
@@ -179,23 +179,23 @@ class Provider::Plaid
       [ transactions, securities ]
     end
 
-    def get_primary_product(accountable_type)
-      return "transactions" if eu?
+    def get_products(accountable_type)
+      return [ "transactions" ] if eu?
 
       case accountable_type
       when "Investment"
-        "investments"
+        [ "investments" ]
       when "CreditCard", "Loan"
-        "liabilities"
+        [ "liabilities", "transactions" ]
       else
-        "transactions"
+        [ "transactions" ]
       end
     end
 
     def get_additional_consented_products(accountable_type)
       return [] if eu?
 
-      MAYBE_SUPPORTED_PLAID_PRODUCTS - [ get_primary_product(accountable_type) ]
+      MAYBE_SUPPORTED_PLAID_PRODUCTS - get_products(accountable_type)
     end
 
     def eu?
