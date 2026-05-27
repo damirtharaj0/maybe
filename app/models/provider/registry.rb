@@ -98,7 +98,7 @@ class Provider::Registry
       when :exchange_rates
         %i[synth]
       when :securities
-        self.class.send(:synth).present? ? %i[synth] : %i[yahoo_finance]
+        ENV.fetch("SYNTH_API_KEY", Setting.synth_api_key).present? ? %i[synth] : %i[yahoo_finance]
       when :llm
         %i[openai]
       else
