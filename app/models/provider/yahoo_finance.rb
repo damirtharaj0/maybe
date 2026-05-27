@@ -3,6 +3,37 @@ class Provider::YahooFinance < Provider
 
   Error = Class.new(Provider::Error)
 
+  YAHOO_EXCHANGE_TO_MIC = {
+    "NMS" => "XNAS",
+    "NGM" => "XNAS",
+    "NCM" => "XNAS",
+    "NYQ" => "XNYS",
+    "PCX" => "ARCX",
+    "ASE" => "XASE",
+    "LSE" => "XLON",
+    "FRA" => "XETR",
+    "TKS" => "XTKS",
+    "TSX" => "XTSE",
+    "ASX" => "XASX",
+    "HKG" => "XHKG",
+    "SHH" => "XSHG",
+    "SHZ" => "XSHE",
+    "PAR" => "XPAR",
+    "AMS" => "XAMS",
+    "SWX" => "XSWX",
+    "MIL" => "XMIL",
+    "MAD" => "XMAD",
+    "KSC" => "XKRX",
+    "BSE" => "XBOM",
+    "NSE" => "XNSE"
+  }.freeze
+
+  YAHOO_QUOTE_TYPE_TO_KIND = {
+    "EQUITY" => "common stock",
+    "ETF" => "etf",
+    "MUTUALFUND" => "mutual fund"
+  }.freeze
+
   EXCHANGE_MIC_SUFFIX_MAP = {
     # US exchanges — no suffix
     "XNYS" => "",
@@ -44,11 +75,58 @@ class Provider::YahooFinance < Provider
   }.freeze
 
   def search_securities(symbol, country_code: nil, exchange_operating_mic: nil)
-    raise NotImplementedError, "Provider::YahooFinance does not implement #search_securities yet"
+    with_provider_response do
+      response = client.get("/v1/finance/search") do |req|
+        req.params["q"] = symbol
+        req.params["quotesCount"] = 25
+        req.params["lang"] = "en-US"
+      end
+
+      parsed = JSON.parse(response.body)
+      quotes = parsed.dig("finance", "result", 0, "quotes") || parsed["quotes"] || []
+
+      quotes.map do |quote|
+        exchange_code = quote["exchange"]
+        mic = YAHOO_EXCHANGE_TO_MIC[exchange_code]
+
+        Security.new(
+          symbol: quote["symbol"],
+          name: quote["shortname"] || quote["longname"],
+          logo_url: nil,
+          exchange_operating_mic: mic,
+          country_code: nil
+        )
+      end
+    end
   end
 
   def fetch_security_info(symbol:, exchange_operating_mic:)
-    raise NotImplementedError, "Provider::YahooFinance does not implement #fetch_security_info yet"
+    with_provider_response do
+      ticker = ticker_for(symbol, exchange_operating_mic)
+
+      response = client.get("/v10/finance/quoteSummary/#{ticker}") do |req|
+        req.params["modules"] = "assetProfile,quoteType,summaryProfile"
+      end
+
+      parsed = JSON.parse(response.body)
+      result = parsed.dig("quoteSummary", "result")&.first
+
+      asset_profile = result&.dig("assetProfile") || {}
+      quote_type = result&.dig("quoteType") || {}
+
+      raw_kind = quote_type["quoteType"]
+      kind = YAHOO_QUOTE_TYPE_TO_KIND[raw_kind] || raw_kind&.downcase
+
+      SecurityInfo.new(
+        symbol: quote_type["symbol"] || symbol,
+        name: quote_type["longName"] || quote_type["shortName"],
+        logo_url: nil,
+        description: asset_profile["longBusinessSummary"],
+        kind: kind,
+        links: nil,
+        exchange_operating_mic: exchange_operating_mic
+      )
+    end
   end
 
   def fetch_security_price(symbol:, exchange_operating_mic:, date:)

@@ -1,0 +1,34 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://query1.finance.yahoo.com/v1/finance/search?lang=en-US&q=AAPL&quotesCount=25
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/120.0.0.0 Safari/537.36
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"quotes":[{"exchange":"NMS","shortname":"Apple Inc.","quoteType":"EQUITY","symbol":"AAPL","index":"quotes","score":1722490.0,"typeDisp":"Equity","longname":"Apple
+        Inc.","exchDisp":"NASDAQ","sector":"Technology","sectorDisp":"Technology","industry":"Consumer
+        Electronics","industryDisp":"Consumer Electronics","isYahooFinance":true},{"exchange":"NYQ","shortname":"Apple
+        Hospitality REIT, Inc.","quoteType":"EQUITY","symbol":"APLE","index":"quotes","score":51321.0,"typeDisp":"Equity","longname":"Apple
+        Hospitality REIT, Inc.","exchDisp":"NYSE","sector":"Real Estate","sectorDisp":"Real
+        Estate","industry":"REIT - Hotel & Motel","industryDisp":"REIT - Hotel &
+        Motel","isYahooFinance":true}],"news":[],"nav":[],"lists":[],"researchReports":[],"screenerFieldResults":[],"totalTime":35,"timeTakenForQuotes":35,"timeTakenForNews":0,"timeTakenForAlgowatchlist":0,"timeTakenForPredefinedLists":0,"timeTakenForCrunchbase":0}'
+  recorded_at: Mon, 26 May 2025 00:00:00 GMT
+recorded_with: VCR 6.3.1
