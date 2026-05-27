@@ -67,6 +67,10 @@ class Provider::Registry
 
         Provider::Openai.new(access_token)
       end
+
+      def yahoo_finance
+        Provider::YahooFinance.new
+      end
   end
 
   def initialize(concept)
@@ -94,7 +98,7 @@ class Provider::Registry
       when :exchange_rates
         %i[synth]
       when :securities
-        %i[synth]
+        self.class.send(:synth).present? ? %i[synth] : %i[yahoo_finance]
       when :llm
         %i[openai]
       else
