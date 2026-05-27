@@ -53,4 +53,13 @@ if rails_env == "development"
   # Specifies a very generous `worker_timeout` so that the worker
   # isn't killed by Puma when suspended by a debugger.
   worker_timeout 3600
+
+  ssl_key = Rails.root.join("config/ssl/localhost-key.pem")
+  ssl_cert = Rails.root.join("config/ssl/localhost.pem")
+
+  if ssl_key.exist? && ssl_cert.exist?
+    ssl_bind "0.0.0.0", ENV.fetch("SSL_PORT") { 3001 },
+      key: ssl_key.to_s,
+      cert: ssl_cert.to_s
+  end
 end
